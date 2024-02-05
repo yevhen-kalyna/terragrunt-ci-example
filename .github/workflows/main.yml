@@ -25,7 +25,7 @@ jobs:
         id: changes
         uses: dorny/paths-filter@v3
         with:
-          filters: .github/paths-filters.yml
+          filters: .github/paths-filter.yml
 
   plan-any:
     if: ${{ needs.detect-changes.outputs.terragrunt_all == 'true' }}
