@@ -41,7 +41,8 @@ jobs:
           echo "Changed terragrunt files: ${{ steps.changes.outputs.terragrunt_all_files }}"
           echo "Changed HCL files: ${{ steps.changes.outputs.hcl_all_files }}"          
           CHANGED_FOLDERS=$(echo "${{ steps.changes.outputs.hcl_all_files }}" | xargs -n1 dirname | sort -u)
-          
+          echo "Changed folders: $CHANGED_FOLDERS"
+
           ### If `terragrunt run-all <command>` doesnt do the trick, we can use the following to detect subfolders with terragrunt.hcl
           # Detect sub-folders of CHANGED_FOLDERS with terragrunt.hcl in it and write to variable
           # for FOLDER in $CHANGED_FOLDERS; do
@@ -52,6 +53,9 @@ jobs:
           #   fi
           # done
           
+          # Convert "str1 str2" like string to json array for matrix strategy
+          CHANGED_FOLDERS=$(echo $CHANGED_FOLDERS | jq -R 'split(" ")' | jq -c .)
+          echo "Chnaged folders in json: $CHANGED_FOLDERS"
           echo "CHANGED_FOLDERS=$CHANGED_FOLDERS" >> $GITHUB_OUTPUT
         shell: bash
 
