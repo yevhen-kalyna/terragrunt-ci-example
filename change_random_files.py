@@ -6,6 +6,8 @@ import os
 def find_and_update_hcl_files(limit):
     updated_files_count = 0
     for hcl_file in glob.glob('terragrunt/**/*.hcl', recursive=True):
+        if '_envcommon' in os.path.dirname(hcl_file):
+            continue
         if updated_files_count >= limit:
             break
 
