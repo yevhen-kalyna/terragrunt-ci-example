@@ -26,15 +26,15 @@ jobs:
         id: changes
         uses: dorny/paths-filter@v3
         with:
-          list-files: json
+          list-files: shell
           filters: |
             terragrunt_all:
               - '**/terragrunt.hcl'
       
       - name: Get changed folders
         run: |
-          echo "Changed folders: ${{ steps.changes.outputs.changes }}"
-          CHANGED_FOLDERS=$(jq -r '.[] | .path' ${{ steps.changes.outputs.changed_files }})
+          echo "Changed files: ${{ steps.changes.outputs.terragrunt_all_files }}"
+          CHANGED_FOLDERS=$(echo "${{ steps.changes.outputs.terragrunt_all_files }}" | xargs -n1 dirname | sort -u)
           echo "CHANGED_FOLDERS=$CHANGED_FOLDERS" >> $GITHUB_OUTPUT
         shell: bash
 
