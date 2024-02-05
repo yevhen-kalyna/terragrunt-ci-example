@@ -1,3 +1,5 @@
+# TODO: Detect changes in _envcommon folder and run commands in terragrunt folders with changed modules
+# TODO: Detect changes in terraform modules and run commands in terragrunt folders with changed modules
 name: Terragrunt CI
 
 on:
@@ -17,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       terragrunt_all: ${{ steps.changes.outputs.terragrunt_all }}
-      changed_folders: ${{ steps.changes.outputs.changes }}
+      changed_folders: ${{ steps.get-changed-folders.outputs.CHANGED_FOLDERS }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -30,11 +32,26 @@ jobs:
           filters: |
             terragrunt_all:
               - '**/terragrunt.hcl'
+            hcl_all:
+              - '**/*.hcl'
       
       - name: Get changed folders
+        id: get-changed-folders
         run: |
-          echo "Changed files: ${{ steps.changes.outputs.terragrunt_all_files }}"
-          CHANGED_FOLDERS=$(echo "${{ steps.changes.outputs.terragrunt_all_files }}" | xargs -n1 dirname | sort -u)
+          echo "Changed terragrunt files: ${{ steps.changes.outputs.terragrunt_all_files }}"
+          echo "Changed HCL files: ${{ steps.changes.outputs.hcl_all_files }}"          
+          CHANGED_FOLDERS=$(echo "${{ steps.changes.outputs.hcl_all_files }}" | xargs -n1 dirname | sort -u)
+          
+          ### If `terragrunt run-all <command>` doesnt do the trick, we can use the following to detect subfolders with terragrunt.hcl
+          # Detect sub-folders of CHANGED_FOLDERS with terragrunt.hcl in it and write to variable
+          # for FOLDER in $CHANGED_FOLDERS; do
+          #   $SUB_FOLDERS=$(find $FOLDER -name terragrunt.hcl -exec dirname {} \; | sort -u)
+          #   # If there are more than 1 subfolders, add them to CHANGED_FOLDERS
+          #   if [ $(echo $SUB_FOLDERS | wc -w) -gt 1 ]; then
+          #     CHANGED_FOLDERS="$CHANGED_FOLDERS $SUB_FOLDERS"
+          #   fi
+          # done
+          
           echo "CHANGED_FOLDERS=$CHANGED_FOLDERS" >> $GITHUB_OUTPUT
         shell: bash
 
@@ -58,4 +75,5 @@ jobs:
       #     tg_dir: ${{ matrix.folder }}
 
       - name: Echo
-        run: echo ${{ matrix.folder }}
+        run: |
+          echo "do something in: ${{ matrix.folder }} folder"
