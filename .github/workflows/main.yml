@@ -1,0 +1,50 @@
+name: Terragrunt CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  tf_version: '1.4.4'
+  tg_version: '0.48.1'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      terragrunt_all: ${{ steps.changes.outputs.terragrunt_all }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Filter paths
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: .github/paths-filters.yml
+
+  plan-any:
+    if: ${{ needs.detect-changes.outputs.terragrunt_all == 'true' }}
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: ${{ fromJSON(needs.detect-changes.outputs.terragrunt_all) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Terragrunt plan
+      #   uses: gruntwork-io/terragrunt-action@v2
+      #   with:
+      #     tf_version: ${{ env.tf_version }}
+      #     tg_version: ${{ env.tg_version }}
+      #     tg_command: plan
+      #     tg_dir: ${{ matrix.folder }}
+
+      - name: Echo
+        run: echo ${{ matrix.folder }}
