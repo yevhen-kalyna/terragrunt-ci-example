@@ -4,10 +4,13 @@ import argparse
 import glob
 import re
 import os
+import random
 
 def find_and_update_hcl_files(limit):
     updated_files_count = 0
-    for hcl_file in glob.glob('terragrunt/**/*.hcl', recursive=True):
+    files = glob.glob('terragrunt/**/*.hcl', recursive=True)
+    random.shuffle(files)
+    for hcl_file in files:
         if '_envcommon' in os.path.dirname(hcl_file):
             continue
         if updated_files_count >= limit:
