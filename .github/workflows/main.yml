@@ -1,5 +1,6 @@
 # TODO: Detect changes in _envcommon folder and run commands in terragrunt folders with changed modules
 # TODO: Detect changes in terraform modules and run commands in terragrunt folders with changed modules
+# TODO: Fix detection of changed folders if parent folder is changed https://github.com/yevhen-kalyna/terragrunt-ci-example/actions/runs/7790973748/job/21246013458
 name: Terragrunt CI
 
 on:
@@ -31,32 +32,18 @@ jobs:
           list-files: shell
           filters: |
             terragrunt_all:
-              - '**/terragrunt.hcl'
+              - 'terragrunt/**/terragrunt.hcl'
+            terraform_all:
+              - 'terraform/**/*.tf'
+            envcommon_all:
+              - 'terragrunt/_envcommon/**/*'
             hcl_all:
               - '**/*.hcl'
-      
       - name: Get changed folders
         id: get-changed-folders
         run: |
-          echo "Changed terragrunt files: ${{ steps.changes.outputs.terragrunt_all_files }}"
-          echo "Changed HCL files: ${{ steps.changes.outputs.hcl_all_files }}"          
-          CHANGED_FOLDERS=$(echo "${{ steps.changes.outputs.hcl_all_files }}" | xargs -n1 dirname | sort -u)
-          echo "Changed folders: $CHANGED_FOLDERS"
-
-          ### If `terragrunt run-all <command>` doesnt do the trick, we can use the following to detect subfolders with terragrunt.hcl
-          # Detect sub-folders of CHANGED_FOLDERS with terragrunt.hcl in it and write to variable
-          # for FOLDER in $CHANGED_FOLDERS; do
-          #   $SUB_FOLDERS=$(find $FOLDER -name terragrunt.hcl -exec dirname {} \; | sort -u)
-          #   # If there are more than 1 subfolders, add them to CHANGED_FOLDERS
-          #   if [ $(echo $SUB_FOLDERS | wc -w) -gt 1 ]; then
-          #     CHANGED_FOLDERS="$CHANGED_FOLDERS $SUB_FOLDERS"
-          #   fi
-          # done
-          
-          # Convert "str1 str2" like string to json array for matrix strategy
-          CHANGED_FOLDERS=$(echo $CHANGED_FOLDERS | jq -R 'split(" ")' | jq -c .)
-          echo "Chnaged folders in json: $CHANGED_FOLDERS"
-          echo "CHANGED_FOLDERS=$CHANGED_FOLDERS" >> $GITHUB_OUTPUT
+          # Will set CHANGED_FOLDERS as JSON array
+          .github/parse_paths.py
         shell: bash
 
   plan-any:
