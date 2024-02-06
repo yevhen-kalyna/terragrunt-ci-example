@@ -3,6 +3,7 @@
 import os
 import argparse
 import json
+from typing import List
 
 # Data for testing purposes
 # paths = [
@@ -45,11 +46,15 @@ if __name__ == "__main__":
     parser.add_argument("paths", nargs="*", help="Paths to parse")
     args = parser.parse_args()
 
-    paths = args.paths
+    paths: List = args.paths
 
     if not paths:
         print("No paths to parse")
-        exit(0)
+        exit(1)
+
+    if "terragrunt/terragrunt.hcl" in paths:
+        print("WARNING: root terragrunt is in paths. This will cause all terragrunt modules to be considered as changed. Removing it..")
+        paths.remove("terragrunt/terragrunt.hcl")
 
     changed_tf_modules = []
     changed_hcl_folders = []

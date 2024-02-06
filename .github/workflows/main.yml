@@ -43,7 +43,7 @@ jobs:
         id: get-changed-folders
         run: |
           # Will set CHANGED_FOLDERS as JSON array
-          .github/parse_paths.py
+          .github/parse_paths.py ${{ steps.changes.outputs.terraform_all_files }} ${{ steps.changes.outputs.hcl_all_files }}
         shell: bash
 
   plan-any:
