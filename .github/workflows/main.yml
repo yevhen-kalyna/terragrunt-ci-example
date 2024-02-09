@@ -50,13 +50,14 @@ jobs:
               - 'terragrunt/_envcommon/**/*'
             hcl_all:
               - '**/*.hcl'
-            tg_not_stg_prod:
-              - '!terragrunt/account2/region1/env-staging/**/*'
-              - '!terragrunt/account1/region1/env-production/**/*'
             tg_staging:
               - 'terragrunt/account2/region1/env-staging/**/*'
+              - 'terragrunt/account2/region1/**'
+              - 'terragrunt/account2/**'
             tg_production:
               - 'terragrunt/account1/region1/env-production/**/*'
+              - 'terragrunt/account1/region1/**'
+              - 'terragrunt/account1/**'
       - name: Get changed folders
         id: get-changed-folders
         run: |
@@ -132,6 +133,8 @@ jobs:
       - plan-staging
       - detect-changes
     runs-on: ubuntu-latest
+    environment:
+      name: staging
     strategy:
       matrix:
         folder: ${{ fromJSON(needs.detect-changes.outputs.tg_staging_folders) }}
@@ -144,7 +147,7 @@ jobs:
           echo "do something in: ${{ matrix.folder }} folder"
   
   plan-production:
-    if: ${{ needs.detect-changes.outputs.tg_production == 'true' }}
+    if: ${{ needs.detect-changes.outputs.tg_production == 'true' }}  
     needs:
       - detect-changes
       - apply-staging
@@ -165,6 +168,8 @@ jobs:
       - plan-production
       - detect-changes
     runs-on: ubuntu-latest
+    environment:
+      name: production
     strategy:
       matrix:
         folder: ${{ fromJSON(needs.detect-changes.outputs.tg_production_folders) }}
