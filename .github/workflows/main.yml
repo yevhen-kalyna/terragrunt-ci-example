@@ -23,6 +23,7 @@ jobs:
       changed_folders: ${{ steps.get-changed-folders.outputs.CHANGED_FOLDERS }}
       tg_staging: ${{ steps.changes.outputs.tg_staging }}
       tg_production: ${{ steps.changes.outputs.tg_production }}
+      tg_not_stg_prod: ${{ steps.changes.outputs.tg_not_stg_prod }}
       tg_staging_folders: ${{ steps.changes.outputs.STAGING_FOLDERS }}
       tg_production_folders: ${{ steps.changes.outputs.PRODUCTION_FOLDERS }}
     steps:
@@ -43,6 +44,9 @@ jobs:
               - 'terragrunt/_envcommon/**/*'
             hcl_all:
               - '**/*.hcl'
+            tg_not_stg_prod:
+              - '!terragrunt/account2/region1/env-staging/**/*'
+              - '!terragrunt/account1/region1/env-production/**/*'
             tg_staging:
               - 'terragrunt/account2/region1/env-staging/**/*'
             tg_production:
@@ -71,7 +75,7 @@ jobs:
           
 
   plan-any:
-    if: ${{ needs.detect-changes.outputs.terragrunt_all == 'true' }}
+    if: ${{ needs.detect-changes.outputs.terragrunt_all == 'true' && needs.detect-changes.outputs.changed_folders != '[]'}}
     needs: detect-changes
     runs-on: ubuntu-latest
     strategy:
