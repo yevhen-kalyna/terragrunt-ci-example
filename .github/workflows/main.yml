@@ -68,13 +68,21 @@ jobs:
       - name: Get changed protected folders
         id: get-changed-staging-folders
         env:
-          STG_AND_PROD: ${{ steps.get-changed-folders.outputs.EXCLUDED_FOLDERS }}
+          STG_AND_PROD_JSON: ${{ steps.get-changed-folders.outputs.EXCLUDED_FOLDERS }}
         run: |
+          STG_AND_PROD=$(echo $STG_AND_PROD_JSON | jq -r '.[]')
           for folder in $STG_AND_PROD; do
-            if [[ $folder == terragrunt/account2/region1/env-staging* ]]; then
+            # Check if the path includes 'env-staging' or 'env-production'
+            if echo "$folder" | grep -q "env-staging"; then
               echo "STAGING_FOLDERS=$folder" >> $GITHUB_OUTPUT
-            fi
-            if [[ $folder == terragrunt/account1/region1/env-production* ]]; then
+            elif echo "$folder" | grep -q "env-production"; then
+              echo "PRODUCTION_FOLDERS=$folder" >> $GITHUB_OUTPUT
+            # For paths without explicit 'env-staging' or 'env-production', assume based on account
+            elif echo "$folder" | grep -q "account2"; then
+              # Assuming account2 without explicit env to be staging
+              echo "STAGING_FOLDERS=$folder" >> $GITHUB_OUTPUT
+            elif echo "$folder" | grep -q "account1"; then
+              # Assuming account1 without explicit env to be production
               echo "PRODUCTION_FOLDERS=$folder" >> $GITHUB_OUTPUT
             fi
           done
