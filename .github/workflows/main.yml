@@ -21,6 +21,10 @@ jobs:
     outputs:
       terragrunt_all: ${{ steps.changes.outputs.terragrunt_all }}
       changed_folders: ${{ steps.get-changed-folders.outputs.CHANGED_FOLDERS }}
+      tg_staging: ${{ steps.changes.outputs.tg_staging }}
+      tg_production: ${{ steps.changes.outputs.tg_production }}
+      tg_staging_folders: ${{ steps.changes.outputs.STAGING_FOLDERS }}
+      tg_production_folders: ${{ steps.changes.outputs.PRODUCTION_FOLDERS }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,12 +43,32 @@ jobs:
               - 'terragrunt/_envcommon/**/*'
             hcl_all:
               - '**/*.hcl'
+            tg_staging:
+              - 'terragrunt/account2/region1/env-staging/**/*'
+            tg_production:
+              - 'terragrunt/account1/region1/env-production/**/*'
       - name: Get changed folders
         id: get-changed-folders
         run: |
-          # Will set CHANGED_FOLDERS as JSON array
-          .github/parse_paths.py ${{ steps.changes.outputs.terraform_all_files }} ${{ steps.changes.outputs.hcl_all_files }}
+          # Will set CHANGED_FOLDERS as JSON array, and remove stg/prod folders from it
+          .github/parse_paths.py ${{ steps.changes.outputs.terraform_all_files }} ${{ steps.changes.outputs.hcl_all_files }} --exclude terragrunt/account2/region1/env-staging terragrunt/account1/region1/env-production
         shell: bash
+
+      - name: Get changed protected folders
+        id: get-changed-staging-folders
+        env:
+          STG_AND_PROD: ${{ steps.get-changed-folders.outputs.EXCLUDED_FOLDERS }}
+        run: |
+          for folder in $STG_AND_PROD; do
+            if [[ $folder == terragrunt/account2/region1/env-staging* ]]; then
+              echo "STAGING_FOLDERS=$folder" >> $GITHUB_OUTPUT
+            fi
+            if [[ $folder == terragrunt/account1/region1/env-production* ]]; then
+              echo "PRODUCTION_FOLDERS=$folder" >> $GITHUB_OUTPUT
+            fi
+          done
+        shell: bash
+          
 
   plan-any:
     if: ${{ needs.detect-changes.outputs.terragrunt_all == 'true' }}
@@ -66,5 +90,70 @@ jobs:
       #     tg_dir: ${{ matrix.folder }}
 
       - name: Echo
+        run: |
+          echo "do something in: ${{ matrix.folder }} folder"
+
+
+  plan-staging:
+    if: ${{ needs.detect-changes.outputs.tg_staging == 'true' }}
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: ${{ fromJSON(needs.detect-changes.outputs.tg_staging_folders) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Echo staging
+        run: |
+          echo "do something in: ${{ matrix.folder }} folder"
+
+  apply-staging:
+    needs: 
+      - plan-staging
+      - detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: ${{ fromJSON(needs.detect-changes.outputs.tg_staging_folders) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Echo apply staging
+        run: |
+          echo "do something in: ${{ matrix.folder }} folder"
+  
+  plan-production:
+    if: ${{ needs.detect-changes.outputs.tg_production == 'true' }}
+    needs:
+      - detect-changes
+      - apply-staging
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: ${{ fromJSON(needs.detect-changes.outputs.tg_production_folders) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Echo production
+        run: |
+          echo "do something in: ${{ matrix.folder }} folder"
+
+  apply-production:
+    needs: 
+      - plan-production
+      - detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: ${{ fromJSON(needs.detect-changes.outputs.tg_production_folders) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Echo apply production
         run: |
           echo "do something in: ${{ matrix.folder }} folder"
