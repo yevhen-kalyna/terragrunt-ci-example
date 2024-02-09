@@ -30,8 +30,8 @@ jobs:
       tg_staging: ${{ steps.changes.outputs.tg_staging }}
       tg_production: ${{ steps.changes.outputs.tg_production }}
       tg_not_stg_prod: ${{ steps.changes.outputs.tg_not_stg_prod }}
-      tg_staging_folders: ${{ steps.changes.outputs.STAGING_FOLDERS }}
-      tg_production_folders: ${{ steps.changes.outputs.PRODUCTION_FOLDERS }}
+      tg_staging_folders: ${{ steps.get-changed-staging-folders.outputs.STAGING_FOLDERS }}
+      tg_production_folders: ${{ steps.get-changed-staging-folders.outputs.PRODUCTION_FOLDERS }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
