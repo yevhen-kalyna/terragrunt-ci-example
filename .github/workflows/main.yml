@@ -7,9 +7,15 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'terragrunt/**'
+      - 'terraform/**'
   pull_request:
     branches:
       - main
+    paths:
+      - 'terragrunt/**'
+      - 'terraform/**'
 
 env:
   tf_version: '1.4.4'
