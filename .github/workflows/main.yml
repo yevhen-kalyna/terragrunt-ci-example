@@ -99,7 +99,7 @@ jobs:
 
 
   plan-staging:
-    if: ${{ needs.detect-changes.outputs.tg_staging == 'true' }}
+    if: ${{ needs.detect-changes.outputs.tg_staging == 'true' || needs.detect-changes.outputs.tg_production == 'false'}}
     needs: detect-changes
     runs-on: ubuntu-latest
     strategy:
@@ -108,6 +108,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Validate
+        run: |
+          # if prod changed, but stg not, fail the build
+          if [[ ${{ needs.detect-changes.outputs.tg_staging_folders }} == '[]' ]]; then
+            echo "Production changed, but staging not. Failing the build"
+            exit 1
+          fi
 
       - name: Echo staging
         run: |
