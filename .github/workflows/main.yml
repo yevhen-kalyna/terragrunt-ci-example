@@ -52,12 +52,12 @@ jobs:
               - '**/*.hcl'
             tg_staging:
               - 'terragrunt/account2/region1/env-staging/**/*'
-              - 'terragrunt/account2/region1/**'
-              - 'terragrunt/account2/**'
+              - 'terragrunt/account2/region1/region.hcl'
+              - 'terragrunt/account2/account.hcl'
             tg_production:
               - 'terragrunt/account1/region1/env-production/**/*'
-              - 'terragrunt/account1/region1/**'
-              - 'terragrunt/account1/**'
+              - 'terragrunt/account1/region1/region.hcl'
+              - 'terragrunt/account1/account.hcl'
       - name: Get changed folders
         id: get-changed-folders
         run: |
