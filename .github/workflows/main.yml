@@ -133,7 +133,7 @@ jobs:
 
 
   plan-staging:
-    if: ${{ needs.detect-changes.outputs.tg_staging == 'true' || needs.detect-changes.outputs.tg_production == 'false'}}
+    if: ${{ needs.detect-changes.outputs.tg_staging == 'true' || needs.detect-changes.outputs.tg_production == 'true'}}
     needs: detect-changes
     runs-on: ubuntu-latest
     strategy:
