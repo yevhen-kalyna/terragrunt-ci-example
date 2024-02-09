@@ -75,7 +75,6 @@ jobs:
           production_folders=()
 
           # Convert JSON string to bash array
-          STG_AND_PROD=$(echo $TEST | jq -r '.[]')
           for folder in $STG_AND_PROD; do
             if echo "$folder" | grep -q "env-staging"; then
               staging_folders+=("$folder")
@@ -89,11 +88,21 @@ jobs:
           done
 
           # Convert bash arrays to JSON arrays
-          STAGING_JSON=$(printf '%s\n' "${staging_folders[@]}" | jq -R . | jq -s .)
-          PRODUCTION_JSON=$(printf '%s\n' "${production_folders[@]}" | jq -R . | jq -s .)
+          STAGING_JSON=$(printf '%s\n' "${staging_folders[@]}" | jq -R . | jq -s . | jq -c .)
+          PRODUCTION_JSON=$(printf '%s\n' "${production_folders[@]}" | jq -R . | jq -s . | jq -c .)
 
-          echo "STAGING_FOLDERS='$STAGING_JSON'" >> $GITHUB_OUTPUT
-          echo "PRODUCTION_FOLDERS='$PRODUCTION_JSON'" >> $GITHUB_OUTPUT
+          # Ensure the output is correctly formatted for GitHub Actions
+          if [ -z "${staging_folders[@]}" ]; then
+            echo "STAGING_FOLDERS='[]'" >> $GITHUB_OUTPUT
+          else
+            echo "STAGING_FOLDERS='${STAGING_JSON}'" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -z "${production_folders[@]}" ]; then
+            echo "PRODUCTION_FOLDERS='[]'" >> $GITHUB_OUTPUT
+          else
+            echo "PRODUCTION_FOLDERS='${PRODUCTION_JSON}'" >> $GITHUB_OUTPUT
+          fi
         shell: bash
           
 
