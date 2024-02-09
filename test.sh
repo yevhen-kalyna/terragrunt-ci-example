@@ -1,4 +1,4 @@
-TEST='["terragrunt/account2/region1", "terragrunt/account1/region1"]'
+TEST='["terragrunt/account1/region1"]'
 # For handling different TEST cases, ensure to replace the TEST variable value with the desired JSON string.
 STG_AND_PROD=$(echo $TEST | jq -r '.[]')
 for folder in $STG_AND_PROD; do

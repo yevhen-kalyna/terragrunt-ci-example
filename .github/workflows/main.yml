@@ -71,21 +71,29 @@ jobs:
           STG_AND_PROD_JSON: ${{ steps.get-changed-folders.outputs.EXCLUDED_FOLDERS }}
         run: |
           STG_AND_PROD=$(echo $STG_AND_PROD_JSON | jq -r '.[]')
+          staging_folders=()
+          production_folders=()
+
+          # Convert JSON string to bash array
+          STG_AND_PROD=$(echo $TEST | jq -r '.[]')
           for folder in $STG_AND_PROD; do
-            # Check if the path includes 'env-staging' or 'env-production'
             if echo "$folder" | grep -q "env-staging"; then
-              echo "STAGING_FOLDERS=$folder" >> $GITHUB_OUTPUT
+              staging_folders+=("$folder")
             elif echo "$folder" | grep -q "env-production"; then
-              echo "PRODUCTION_FOLDERS=$folder" >> $GITHUB_OUTPUT
-            # For paths without explicit 'env-staging' or 'env-production', assume based on account
+              production_folders+=("$folder")
             elif echo "$folder" | grep -q "account2"; then
-              # Assuming account2 without explicit env to be staging
-              echo "STAGING_FOLDERS=$folder" >> $GITHUB_OUTPUT
+              staging_folders+=("$folder")
             elif echo "$folder" | grep -q "account1"; then
-              # Assuming account1 without explicit env to be production
-              echo "PRODUCTION_FOLDERS=$folder" >> $GITHUB_OUTPUT
+              production_folders+=("$folder")
             fi
           done
+
+          # Convert bash arrays to JSON arrays
+          STAGING_JSON=$(printf '%s\n' "${staging_folders[@]}" | jq -R . | jq -s .)
+          PRODUCTION_JSON=$(printf '%s\n' "${production_folders[@]}" | jq -R . | jq -s .)
+
+          echo "STAGING_FOLDERS='$STAGING_JSON'" >> $GITHUB_OUTPUT
+          echo "PRODUCTION_FOLDERS='$PRODUCTION_JSON'" >> $GITHUB_OUTPUT
         shell: bash
           
 
