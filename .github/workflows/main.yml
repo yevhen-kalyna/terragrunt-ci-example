@@ -95,13 +95,13 @@ jobs:
           if [ -z "${staging_folders[@]}" ]; then
             echo "STAGING_FOLDERS='[]'" >> $GITHUB_OUTPUT
           else
-            echo "STAGING_FOLDERS='${STAGING_JSON}'" >> $GITHUB_OUTPUT
+            echo "STAGING_FOLDERS=${STAGING_JSON}" >> $GITHUB_OUTPUT
           fi
 
           if [ -z "${production_folders[@]}" ]; then
             echo "PRODUCTION_FOLDERS='[]'" >> $GITHUB_OUTPUT
           else
-            echo "PRODUCTION_FOLDERS='${PRODUCTION_JSON}'" >> $GITHUB_OUTPUT
+            echo "PRODUCTION_FOLDERS=${PRODUCTION_JSON}" >> $GITHUB_OUTPUT
           fi
           echo STAGING_FOLDERS=$STAGING_JSON
           echo PRODUCTION_FOLDERS=$PRODUCTION_JSON
