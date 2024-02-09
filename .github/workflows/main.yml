@@ -103,6 +103,8 @@ jobs:
           else
             echo "PRODUCTION_FOLDERS='${PRODUCTION_JSON}'" >> $GITHUB_OUTPUT
           fi
+          echo STAGING_FOLDERS=$STAGING_JSON
+          echo PRODUCTION_FOLDERS=$PRODUCTION_JSON
         shell: bash
           
 
