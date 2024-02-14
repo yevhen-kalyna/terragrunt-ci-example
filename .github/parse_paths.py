@@ -38,12 +38,13 @@ def filter_paths(paths: List, exclude_filters=None):
         # Check if current path is a subpath of any path in filtered_paths
         if not any(path.startswith(parent_path + '/') for parent_path in filtered_paths):
             for exclude_filter in exclude_filters:
-                if path in exclude_filter:
+                if exclude_filter in path:
                     excluded_paths.append(path)
                     break
-                continue
-            filtered_paths.append(path)
-
+            if path not in excluded_paths:
+                filtered_paths.append(path)
+    filtered_paths = list(set(filtered_paths))
+    excluded_paths = list(set(excluded_paths))
     return filtered_paths, excluded_paths
     
 
